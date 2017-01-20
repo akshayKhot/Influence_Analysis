@@ -69,35 +69,38 @@ public class BFS_Transpose {
     }
 
     void get_sketch() {
-        int num_sketch = 100; // numVertices/10000;
+        double W = (1/Math.pow(eps, 3)) * (numVertices + numEdges) * Math.log(numVertices);
 
-        int sum = 0;
+        double weight_of_current_index = 0.0;
+        int index = 0;
 
-
-        // repeat this while weight of the index is less than W. How to get the weight of index
-        for(int i=0; i<num_sketch; i++) {
-            System.out.println(i);
-            int v = permutation[i];
+        while(weight_of_current_index < W)
+        {
+            System.out.println(weight_of_current_index);
+            int v = permutation[index];
             marked.clear();
             BFS(v,marked);
 
-            int nodes_reached = marked.cardinality();
-            sum += nodes_reached;
-            //System.out.println("Nodes reachable from " + v + ": " + nodes_reached);
+            int total_out_degree = 0;
+            for (int i = marked.nextSetBit(0); i >= 0; i = marked.nextSetBit(i+1))
+            {
+                total_out_degree += Graph.outdegree(i);
+            }
+            weight_of_current_index += (marked.cardinality() + total_out_degree);
+            index++;
         }
+        System.out.println("Index: " + index);
 
-        System.out.println("Avg of nodes reached = " + (1.0*sum/num_sketch));
-        System.out.println("This is " + (100.0*(sum/num_sketch)/ numVertices) + "% of nodes");
     }
 
-    void BFS(int z, BitSet marked) {
+    void BFS(int z, BitSet reached_nodes) {
 
         Random random = new Random();
 
         Deque<Integer> queue = new ArrayDeque<Integer>();
 
         queue.add(z);
-        marked.set(z);
+        reached_nodes.set(z);
 
         while (!queue.isEmpty()) {
             int v = queue.remove();
@@ -108,9 +111,9 @@ public class BFS_Transpose {
                 int uv = v_neighbors[ni];
                 double xi = random.nextDouble(); // activation is random Zi is v
 
-                if (!marked.get(uv) && xi < prob) {
+                if (!reached_nodes.get(uv) && xi < prob) {
                     queue.add(uv);
-                    marked.set(uv);
+                    reached_nodes.set(uv);
                 }
             }
         }
