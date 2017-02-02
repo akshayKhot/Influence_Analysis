@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="me.lemire.integercompression:JavaFastPFOR:0.1.10" type="repository">
+    <properties maven-id="me.lemire.integercompression:JavaFastPFOR:0.1.10" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/me/lemire/integercompression/JavaFastPFOR/0.1.10/JavaFastPFOR-0.1.10.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
