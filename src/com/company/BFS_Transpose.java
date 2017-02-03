@@ -71,7 +71,7 @@ public class BFS_Transpose {
         long startTime = System.currentTimeMillis();
         while(weight_of_current_index < W)
         {
-            if(index % 1000 == 0) {
+            if(index % 100 == 0) {
                 double sofarTimeInMin = (System.currentTimeMillis() - startTime)/(1000.0 * 60);
                 double pctDone = 100*weight_of_current_index/W;
 

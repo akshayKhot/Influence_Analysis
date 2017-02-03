@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.Random;
 
 import it.unimi.dsi.webgraph.ImmutableGraph;
-import me.lemire.integercompression.IntCompressor;
 
 public class BFS_Transpose_flat {
     ImmutableGraph G;
@@ -16,7 +15,6 @@ public class BFS_Transpose_flat {
     double p; // given probability of arc existence
     int k; // given number of maximum influence nodes
     int nMAX = 1000000;
-    IntCompressor compressor = new IntCompressor();
 
     int[] permutation;
     BitSet marked;
@@ -27,7 +25,7 @@ public class BFS_Transpose_flat {
     int[] sketches;
     int[] nodes;
     int[] node_infl;
-    int count_sketches; // the length of sketches and nodes arrays
+    int total_nodes_in_sketch; // the length of sketches and nodes arrays
 
     public BFS_Transpose_flat(String basename, Double  p) throws Exception {
         G = ImmutableGraph.load(basename);
@@ -85,7 +83,7 @@ public class BFS_Transpose_flat {
         int sketch_num = 0;
 
         long startTime = System.currentTimeMillis();
-        count_sketches = 0;
+        total_nodes_in_sketch = 0;
         while(weight_of_current_index < W)
         {
             if(index % 10000 == 0) {
@@ -108,42 +106,36 @@ public class BFS_Transpose_flat {
             int total_out_degree = 0;
 
             int iteration = 0;
-            for (int i = marked.nextSetBit(0); i >= 0; i = marked.nextSetBit(i+1))
+            for (int nextMarkedNode = marked.nextSetBit(0); nextMarkedNode >= 0; nextMarkedNode = marked.nextSetBit(nextMarkedNode+1))
             {
-                sketches[count_sketches + iteration] = sketch_num; // comment out this line
-                nodes[count_sketches + iteration]  = i;
-                node_infl[i] = node_infl[i] + 1;
+                sketches[total_nodes_in_sketch + iteration] = sketch_num;
+                nodes[total_nodes_in_sketch + iteration]  = nextMarkedNode;
+                node_infl[nextMarkedNode] = node_infl[nextMarkedNode] + 1;
                 iteration = iteration + 1;
-                total_out_degree += G.outdegree(i);
+                total_out_degree += G.outdegree(nextMarkedNode);
             }
 
-            // Can we do following?
-            // sketches[sketch_num] = iteration
-
-
-            // compress the sketches array
-            int[] compressed_sketches = compressor.compress(sketches);
             weight_of_current_index += (marked.cardinality() + total_out_degree);
             index = ( index + 1 ) % n;
             sketch_num++;
-            count_sketches += marked.cardinality();
+            total_nodes_in_sketch += marked.cardinality();
         }
 
         System.out.println();
         System.out.println("Index: " + index +
                 ", Number of Sketches: " + sketch_num +
-                ", Size of array iSketch: " + count_sketches);
+                ", Size of array iSketch: " + total_nodes_in_sketch);
         System.out.println();
 
         // Cutting off the tails of sketches and nodes arrays, making the arrays shorter
-        int[] iSketch = new int[count_sketches+1];
-        System.arraycopy(sketches,0,iSketch,0,count_sketches);
+        int[] iSketch = new int[total_nodes_in_sketch +1];
+        System.arraycopy(sketches,0,iSketch,0, total_nodes_in_sketch);
 
-        int[] iNode = new int[count_sketches+1];
-        System.arraycopy(nodes,0,iNode,0,count_sketches);
+        int[] iNode = new int[total_nodes_in_sketch +1];
+        System.arraycopy(nodes,0,iNode,0, total_nodes_in_sketch);
 
         System.gc();
-        get_seeds(iSketch, iNode, node_infl, k, count_sketches);
+        get_seeds(iSketch, iNode, node_infl, k, total_nodes_in_sketch);
     }
 
     void BFS(int v, BitSet marked) {
@@ -172,7 +164,7 @@ public class BFS_Transpose_flat {
         }
     }
 
-    void get_seeds(int[] sketch_I, int[] node_I, int[] node_infl, int k, int count_sketches) {
+    void get_seeds(int[] sketches, int[] nodes, int[] node_infl, int k, int count_sketches) {
 
         // Calculating the node with max influence
         int infl_max = 0;
@@ -202,34 +194,34 @@ public class BFS_Transpose_flat {
         node_infl[max_node] = 0;
         for(int j=0;j<count_sketches;j++)
         {
-            if(node_I[j] == max_node)
+            if(nodes[j] == max_node)
             {
-                int redundant_sketch = sketch_I[j];
+                int redundant_sketch = sketches[j];
 
                 // As sketches are added to the array in numerical order, the same redundant sketch can be found before and after the max node
                 int l = j+1;
-                while(sketch_I[l] == redundant_sketch) {
-                    node_infl[node_I[l]] = node_infl[node_I[l]] - 1;
-                    sketch_I[l] = -1;
-                    node_I[l] = -1;
+                while(sketches[l] == redundant_sketch) {
+                    node_infl[nodes[l]] = node_infl[nodes[l]] - 1;
+                    sketches[l] = -1;
+                    nodes[l] = -1;
                     l++;
                 }
-                if(j>0) // (j!=0) Boundary of the arrays sketch_I and node_I
+                if(j>0) // (j!=0) Boundary of the arrays sketches and nodes
                 {
                     int ll = j-1;
-                    while(sketch_I[ll] == redundant_sketch) {
-                        node_infl[node_I[ll]] = node_infl[node_I[ll]] - 1;
-                        sketch_I[ll] = -1;
-                        node_I[ll] = -1;
+                    while(sketches[ll] == redundant_sketch) {
+                        node_infl[nodes[ll]] = node_infl[nodes[ll]] - 1;
+                        sketches[ll] = -1;
+                        nodes[ll] = -1;
                         ll--;
                     }
                 }
-                sketch_I[j] = -1;
-                node_I[j] = -1;
+                sketches[j] = -1;
+                nodes[j] = -1;
             }
         }
 
-        get_seeds(sketch_I, node_I, node_infl, k-1, count_sketches);
+        get_seeds(sketches, nodes, node_infl, k-1, count_sketches);
     }
 
 
