@@ -36,13 +36,12 @@ import java.io.PrintWriter;
 
 public class DimacsTransform {
 
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
+
+        args = new String[] {"/Users/akshaykhot/Desktop/Thesis/code/cnr-2000-t", "0.1"};
+
         if (args == null || args.length ==0) {
-            System.out
-                    .println("usage: java webgraphToDIMACS.app.Application basename");
+            System.out.println("usage: java webgraphToDIMACS.app.Application basename");
             return;
         }
 
@@ -63,6 +62,7 @@ public class DimacsTransform {
 }
 
 class DimacsASCIIGraph extends ArcListASCIIGraph {
+
     DimacsASCIIGraph(final InputStream is, final int shift)
             throws NumberFormatException, IOException {
         super(is, shift);
@@ -71,7 +71,7 @@ class DimacsASCIIGraph extends ArcListASCIIGraph {
     static void storeDimacs(final ImmutableGraph graph,
                             final CharSequence basename, final int shift,boolean normalized) throws IOException {
         final PrintWriter pw = new PrintWriter(new BufferedWriter(
-                new FileWriter(basename.toString())));
+                new FileWriter("output.txt")));
         pw.println("p sp " + graph.numNodes() + " " + graph.numArcs());
         int d, s;
         int[] successor;
