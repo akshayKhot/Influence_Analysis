@@ -20,6 +20,7 @@ public class InfluenceMax_list {
 
     int[] permutation;
     BitSet marked;
+    int BETA = 16;
 
     public InfluenceMax_list(String basename, Double  p) throws Exception {
         G = ImmutableGraph.load(basename);
@@ -27,7 +28,7 @@ public class InfluenceMax_list {
         n = G.numNodes();
         m = G.numArcs();
         //System.out.println("n="+n + ", m=" +m  + ", W=" +( (1/Math.pow(eps, 3)) * (n+m)*Math.log(n)  ));
-        System.out.println("n="+n + ", m=" +m  + ", W=" +( 32 * (n+m)*Math.log(n)  ));
+        System.out.println("n="+n + ", m=" +m  + ", W=" +( BETA * (n+m)*Math.log(n)  ));
 
         marked = new BitSet(n);
 
@@ -57,7 +58,7 @@ public class InfluenceMax_list {
 
     void get_sketch() {
         //double W = (1/Math.pow(eps, 3)) * (n + m) * Math.log(n);
-        double W = 32 * (n + m) * Math.log(n);
+        double W = BETA * (n + m) * Math.log(n);
 
 
         List<List<Integer>> I = new ArrayList<List<Integer>>();
@@ -195,7 +196,7 @@ public class InfluenceMax_list {
         long estimatedTime;
 
         //args = new String[] {"edges02", "0.2"};
-        args = new String[] {"cnr2000t", "0.1"};
+        args = new String[] {"/Users/akshaykhot/Desktop/Thesis/code/cnr-2000-t", "0.1"};
         //args = new String[] {"uk100Tnoself", "0.1"};
 
 
