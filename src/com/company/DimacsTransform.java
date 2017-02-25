@@ -72,18 +72,15 @@ class DimacsASCIIGraph extends ArcListASCIIGraph {
                             final CharSequence basename, final int shift,boolean normalized) throws IOException {
         final PrintWriter pw = new PrintWriter(new BufferedWriter(
                 new FileWriter("output.txt")));
-        pw.println("p sp " + graph.numNodes() + " " + graph.numArcs());
+        pw.println("n: " + graph.numNodes() + "\nm: " + graph.numArcs());
         int d, s;
         int[] successor;
-        for (NodeIterator nodeIterator = graph.nodeIterator(); nodeIterator
-                .hasNext();) {
+        for (NodeIterator nodeIterator = graph.nodeIterator(); nodeIterator.hasNext();) {
             s = nodeIterator.nextInt();
             d = nodeIterator.outdegree();
-            int length=(normalized?1:new Double(Math.ceil(Math.log(d))).intValue());
             successor = nodeIterator.successorArray();
             for (int i = 0; i < d; i++)
-                pw.println("a " + (s + shift) + " " + (successor[i] + shift)
-                        + " "+length);
+                pw.println((s + shift) + " " + (successor[i] + shift));
         }
         pw.close();
     }
