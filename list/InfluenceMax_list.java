@@ -15,6 +15,7 @@ public class InfluenceMax_list {
     double p; // given probability of arc existence
     int k = 5; // given number of maximum influence nodes
     int beta = 2;
+    double W;
     
     int[] permutation;
     BitSet marked;
@@ -24,47 +25,36 @@ public class InfluenceMax_list {
 		
 		n = G.numNodes();
 		m = G.numArcs();
-		//System.out.println("n="+n + ", m=" +m  + ", W=" +( (1/Math.pow(eps, 3)) * (n+m)*Math.log(n)  ));
-        System.out.println("n="+n + ", m=" +m  + ", W=" +( beta * (n+m)*Math.log(n)  ));
+		W = beta * (n + m) * Math.log(n);
+
+        System.out.println("n="+n + ", m=" +m  + ", W=" + W);
 		
 		marked = new BitSet(n);
 		
 		permutation = new int[n];
         
-//		System.out.println("Initializing the permutation array...");
 		for(int i=0; i<n; i++)
 			permutation[i] = i;
-//		System.out.println("Permutation array initialized.");
-		
-//		System.out.println("Shuffling the permutation array...");
 		Random rnd = new Random();
-		// Shuffle array
         for (int i=n; i>1; i--) {
         	int j = rnd.nextInt(i);
-        	//swap
         	int temp = permutation[i-1];
         	permutation[i-1] = permutation[j];
         	permutation[j] = temp;
         }
-        System.out.println("Permutation array shuffled.");		
-        
-        
+
         this.p = p;
 	}
     
 	
 	void get_sketch() {
-	    //double W = (1/Math.pow(eps, 3)) * (n + m) * Math.log(n);
-        double W = beta * (n + m) * Math.log(n);
 
-        
         List<List<Integer>> I = new ArrayList<List<Integer>>();
         for(int j=0;j<n;j++)
         {
             I.add(new ArrayList<Integer>());
         }
-        System.out.println("index I created.");
-                           
+
 	    double weight_of_current_index = 0.0;
 	    int index = 0;
         int sketch_num = 0;
@@ -90,7 +80,7 @@ public class InfluenceMax_list {
 	        
 	    	int v = permutation[gen_rnd.nextInt(n)];
 	        marked.clear();
-	        BFS(v,marked);
+	        BFS(v,marked); // marked now contains all nodes influenced by v. i.e., in the original graph, all the nodes which influence v.
             
             int j=0;
 	        int total_out_degree = 0;
@@ -107,19 +97,12 @@ public class InfluenceMax_list {
 	    System.out.println("Index: " + index +
                            " Number of Sketches: " + sketch_num);
         System.out.println();
-        
-/*        for(int j=0;j<25;j++)
-        {
-            System.out.println(I.get(j));
-            System.out.println();
-        }
- */
+
         System.gc();
         int set_infl = 0;
         get_seeds(I, k, sketch_num, set_infl);
 	}
 
-		
 	void BFS(int v, BitSet marked) {
 		
 		Random random = new Random();
@@ -150,17 +133,16 @@ public class InfluenceMax_list {
 
         int infl_max = 0;
         int max_node = 0;
-        int node_sketch = 1;
         int total_infl = 0;
 
-        
         for(int v=0;v<n;v++)
         {
-            if(I.get(v).size() < node_sketch)
+            if(I.get(v).size() < 1)
                 continue;
             else {
-                if(I.get(v).size() * n/sketch_num > infl_max) {
-                    infl_max = I.get(v).size() * n/sketch_num;
+                int infl = I.get(v).size() * n/sketch_num;
+                if(infl > infl_max) {
+                    infl_max = infl;
                     max_node = v;
                 }
             }
@@ -168,46 +150,37 @@ public class InfluenceMax_list {
 
         total_infl = set_infl + infl_max;
 
-        System.out.println();
         System.out.println(
-                           "Max Node = " + max_node +
+                           "\nMax Node = " + max_node +
                            ", Maximum Influence = " + total_infl);
-        System.out.println();
-        
-        // Stopping condition: no need to re-calculate the influence, if we already got the k seeds
+
         if((k - 1)==0)
             return;
         
         // Re-calculating the influence of the remaining nodes: remove max node and the sketches it participated in
         // plus re-calculate the influence
-        
+
+        List<Integer> nodes_in_max = I.get(max_node);
         for(int u=0;u<n;u++) {
-            if((I.get(u).size() < node_sketch) || (u == max_node))
+            if((I.get(u).size() < 1) || (u == max_node))
                 continue;
             else
             {
-                I.get(u).removeAll(I.get(max_node));
+                I.get(u).removeAll(nodes_in_max);
             }
         }
         I.get(max_node).clear();
         
         get_seeds(I, k-1, sketch_num, total_infl);
     }
-	
-		
+
 	public static void main(String[] args) throws Exception {
 		long startTime = System.currentTimeMillis();
-		long estimatedTime;
 
-		args = new String[] {"/Users/akshaykhot/Desktop/Thesis/infl_max/sym-noself/cnr-2000-t", "0.1"};
-
-		String basename  = args[0];
-		double p = Double.valueOf(args[1]);
-		
-		InfluenceMax_list iml = new InfluenceMax_list(basename, p);
+		InfluenceMax_list iml = new InfluenceMax_list("/Users/akshaykhot/Desktop/Thesis/infl_max/sym-noself/cnr-2000-t", 0.1);
 		iml.get_sketch();
-			
-		estimatedTime = System.currentTimeMillis() - startTime;
-		System.out.println("Time elapsed = " + estimatedTime / 1000.0 + " sec");	
+
+        long estimatedTime = System.currentTimeMillis() - startTime;
+		System.out.println("\nTime elapsed = " + estimatedTime / 1000.0 + " sec");
 	}
 }
