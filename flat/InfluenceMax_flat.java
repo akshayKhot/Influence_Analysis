@@ -3,8 +3,6 @@ import java.util.BitSet;
 import java.util.Deque;
 import java.util.Random;
 
-import java.util.Arrays;
-
 import it.unimi.dsi.webgraph.ImmutableGraph;
 
 public class InfluenceMax_flat {
@@ -12,9 +10,11 @@ public class InfluenceMax_flat {
 	int n;
 	long m;
 	double eps = .1;
-    double p; // given probability of arc existence
-    int k; // given number of maximum influence nodes
-    int nMAX = 1000000000;
+    double p;
+    int k = 5;
+    int beta = 2;
+    double W;
+    int nMAX = 10000000;
     
     int[] permutation;
     BitSet marked;
@@ -33,32 +33,26 @@ public class InfluenceMax_flat {
 		
 		n = G.numNodes();
 		m = G.numArcs();
-        k = 5;
-		//System.out.println("n="+n + ", m=" +m  + ", W=" +( (1/Math.pow(eps, 3)) * (n+m)*Math.log(n)  ));
-        System.out.println("n="+n + ", m=" +m  + ", W=" +( 32 * (n+m)*Math.log(n)  ));
+        W = beta * (n + m) * Math.log(n);
 
-		
+        System.out.println("n=" + n + ", m=" + m  + ", W=" + W);
+
 		marked = new BitSet(n);
 		
 		permutation = new int[n];
         
         // Flat arrays created: sketches and nodes are very large, nMAX equals one billion
-        //                      node_infl - the size is n (the number of nodes)
+        // node_infl - the size is n (the number of nodes)
         sketches = new int[nMAX];
         nodes = new int[nMAX];
         node_infl = new int[n];
         
-//		System.out.println("Initializing the permutation array...");
 		for(int i=0; i<n; i++)
 			permutation[i] = i;
-//		System.out.println("Permutation array initialized.");
-		
-//		System.out.println("Shuffling the permutation array...");
+
 		Random rnd = new Random();
-		// Shuffle array
         for (int i=n; i>1; i--) {
         	int j = rnd.nextInt(i);
-        	//swap
         	int temp = permutation[i-1];
         	permutation[i-1] = permutation[j];
         	permutation[j] = temp;
@@ -73,16 +67,12 @@ public class InfluenceMax_flat {
         }
         
         System.out.println("index I initialized.");
-        
-        
+
         this.p = p;
 	}
     
 	
 	void get_sketch() {
-	    //double W = (1/Math.pow(eps, 3)) * (n + m) * Math.log(n);
-        double W = 32 * (n + m) * Math.log(n);
-                           
 	    double weight_of_current_index = 0.0;
 	    int index = 0;
         int sketch_num = 0;
@@ -127,12 +117,8 @@ public class InfluenceMax_flat {
             count_sketches += marked.cardinality();
 	    }
         
-        System.out.println();
-	    System.out.println("Index: " + index +
-                           ", Number of Sketches: " + sketch_num +
-                           ", Size of array iSketch: " + count_sketches);
-        System.out.println();
-        
+	    System.out.println("\nIndex: " + index + ", Number of Sketches: " + sketch_num + ", Size of array iSketch: " + count_sketches + "\n");
+
         // Cutting off the tails of sketches and nodes arrays, making the arrays shorter
         int[] iSketch = new int[count_sketches + 1];
         System.arraycopy(sketches,0,iSketch,0,count_sketches);
@@ -201,7 +187,6 @@ public class InfluenceMax_flat {
                            ", Maximum Influence = " + total_infl);
         System.out.println();
         
-        // Stopping condition: no need to re-calculate the influence, if we already got the k seeds
         if((k - 1)==0)
             return;
         
@@ -248,20 +233,12 @@ public class InfluenceMax_flat {
 		
 	public static void main(String[] args) throws Exception {
 		long startTime = System.currentTimeMillis();
-		long estimatedTime;
 
-		//args = new String[] {"edges02", "0.2"};
-		args = new String[] {"cnr2000t", "0.1"};
-        //args = new String[] {"uk100Tnoself", "0.1"};
-
-		
-		String basename  = args[0];
-		double p = Double.valueOf(args[1]);
-		
-        InfluenceMax_flat imfl = new InfluenceMax_flat(basename, p);
+        InfluenceMax_flat imfl = new InfluenceMax_flat("/Users/akshaykhot/Desktop/Thesis/infl_max/sym-noself/cnr-2000-t", 0.1);
 		imfl.get_sketch();
-			
-		estimatedTime = System.currentTimeMillis() - startTime;
+
+        long estimatedTime = System.currentTimeMillis() - startTime;
 		System.out.println("Time elapsed = " + estimatedTime /(1000.0) + " sec");
 	}
+
 }

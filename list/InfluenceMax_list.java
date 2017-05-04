@@ -27,7 +27,7 @@ public class InfluenceMax_list {
 		m = G.numArcs();
 		W = beta * (n + m) * Math.log(n);
 
-        System.out.println("n="+n + ", m=" +m  + ", W=" + W);
+        System.out.println("n=" + n + ", m=" + m  + ", W=" + W);
 		
 		marked = new BitSet(n);
 		
@@ -93,10 +93,8 @@ public class InfluenceMax_list {
 	        index = ( index + 1 ) % n;
             sketch_num++;
 	    }
-        System.out.println();
-	    System.out.println("Index: " + index +
-                           " Number of Sketches: " + sketch_num);
-        System.out.println();
+
+	    System.out.println("\nIndex: " + index + "\nNumber of Sketches: " + sketch_num);
 
         System.gc();
         int set_infl = 0;
@@ -150,15 +148,13 @@ public class InfluenceMax_list {
 
         total_infl = set_infl + infl_max;
 
-        System.out.println(
-                           "\nMax Node = " + max_node +
-                           ", Maximum Influence = " + total_infl);
+        System.out.println("\nMax Node = " + max_node + ", Influence = " + infl_max + ", Maximum Influence = " + total_infl);
 
         if((k - 1)==0)
             return;
         
         // Re-calculating the influence of the remaining nodes: remove max node and the sketches it participated in
-        // plus re-calculate the influence
+        // re-calculate the influence
 
         List<Integer> nodes_in_max = I.get(max_node);
         for(int u=0;u<n;u++) {
