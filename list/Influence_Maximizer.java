@@ -16,6 +16,7 @@ public class Influence_Maximizer {
     int k = 5; // given number of maximum influence nodes
     int beta = 2;
     double W;
+    double sketchTime, seedTime;
 
     int[] permutation;
     BitSet marked;
@@ -28,7 +29,8 @@ public class Influence_Maximizer {
         iml.maximize();
 
         long estimatedTime = System.currentTimeMillis() - startTime;
-        System.out.println("\nTotal time = " + estimatedTime / 1000.0 + " sec");
+
+        System.out.println("Total time = " + estimatedTime / 1000.0 + " sec");
     }
 
     public Influence_Maximizer(String basename, Double  p) throws Exception {
@@ -65,12 +67,17 @@ public class Influence_Maximizer {
         Sketch_Generator sketcher = new Sketch_Generator(this);
         sketcher.get_sketch();
         time = System.currentTimeMillis() - start;
-        System.out.println("\nTime to create sketches = " + time / 1000.0 + " sec");
+        this.sketchTime = time/1000.0;
+
 
         start = System.currentTimeMillis();
         Seed_Computer seeder = new Seed_Computer(this);
         seeder.get_seeds(sketcher.I, k, sketcher.sketch_num, 0);
         time = System.currentTimeMillis() - start;
-        System.out.println("\nTime to compute seeds = " + time / 1000.0 + " sec");
+        this.seedTime = time/1000.0;
+
+
+        System.out.println("\nTime to create sketches = " + this.sketchTime + " sec");
+        System.out.println("Time to compute seeds = " + this.seedTime + " sec");
     }
 }
